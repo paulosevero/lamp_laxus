@@ -1,0 +1,1300 @@
+{
+    "simulation_steps": 1,
+    "coordinates_system": "hexagonal_grid",
+    "base_stations": [
+        {
+            "id": 1,
+            "coordinates": [
+                0,
+                0
+            ],
+            "users": [],
+            "wireless_delay": 10
+        },
+        {
+            "id": 2,
+            "coordinates": [
+                2,
+                0
+            ],
+            "users": [],
+            "wireless_delay": 10
+        },
+        {
+            "id": 3,
+            "coordinates": [
+                4,
+                0
+            ],
+            "users": [],
+            "wireless_delay": 10
+        },
+        {
+            "id": 4,
+            "coordinates": [
+                6,
+                0
+            ],
+            "users": [],
+            "wireless_delay": 10
+        },
+        {
+            "id": 5,
+            "coordinates": [
+                1,
+                1
+            ],
+            "users": [],
+            "wireless_delay": 10
+        },
+        {
+            "id": 6,
+            "coordinates": [
+                3,
+                1
+            ],
+            "users": [],
+            "wireless_delay": 10
+        },
+        {
+            "id": 7,
+            "coordinates": [
+                5,
+                1
+            ],
+            "users": [],
+            "wireless_delay": 10
+        },
+        {
+            "id": 8,
+            "coordinates": [
+                7,
+                1
+            ],
+            "users": [],
+            "wireless_delay": 10
+        },
+        {
+            "id": 9,
+            "coordinates": [
+                0,
+                2
+            ],
+            "users": [],
+            "wireless_delay": 10
+        },
+        {
+            "id": 10,
+            "coordinates": [
+                2,
+                2
+            ],
+            "users": [],
+            "wireless_delay": 10
+        },
+        {
+            "id": 11,
+            "coordinates": [
+                4,
+                2
+            ],
+            "users": [],
+            "wireless_delay": 10
+        },
+        {
+            "id": 12,
+            "coordinates": [
+                6,
+                2
+            ],
+            "users": [],
+            "wireless_delay": 10
+        },
+        {
+            "id": 13,
+            "coordinates": [
+                1,
+                3
+            ],
+            "users": [],
+            "wireless_delay": 10
+        },
+        {
+            "id": 14,
+            "coordinates": [
+                3,
+                3
+            ],
+            "users": [],
+            "wireless_delay": 10
+        },
+        {
+            "id": 15,
+            "coordinates": [
+                5,
+                3
+            ],
+            "users": [],
+            "wireless_delay": 10
+        },
+        {
+            "id": 16,
+            "coordinates": [
+                7,
+                3
+            ],
+            "users": [],
+            "wireless_delay": 10
+        }
+    ],
+    "edge_servers": [
+        {
+            "id": 1,
+            "capacity": 10,
+            "base_station": 1,
+            "updated": false,
+            "patch": 10,
+            "sanity_check": 20,
+            "services": [],
+            "coordinates": [
+                0,
+                0
+            ]
+        },
+        {
+            "id": 2,
+            "capacity": 10,
+            "base_station": 2,
+            "updated": false,
+            "patch": 10,
+            "sanity_check": 20,
+            "services": [],
+            "coordinates": [
+                2,
+                0
+            ]
+        },
+        {
+            "id": 3,
+            "capacity": 10,
+            "base_station": 3,
+            "updated": false,
+            "patch": 10,
+            "sanity_check": 20,
+            "services": [],
+            "coordinates": [
+                4,
+                0
+            ]
+        },
+        {
+            "id": 4,
+            "capacity": 10,
+            "base_station": 4,
+            "updated": false,
+            "patch": 10,
+            "sanity_check": 20,
+            "services": [],
+            "coordinates": [
+                6,
+                0
+            ]
+        },
+        {
+            "id": 5,
+            "capacity": 10,
+            "base_station": 5,
+            "updated": false,
+            "patch": 10,
+            "sanity_check": 20,
+            "services": [],
+            "coordinates": [
+                1,
+                1
+            ]
+        },
+        {
+            "id": 6,
+            "capacity": 10,
+            "base_station": 6,
+            "updated": false,
+            "patch": 10,
+            "sanity_check": 20,
+            "services": [],
+            "coordinates": [
+                3,
+                1
+            ]
+        },
+        {
+            "id": 7,
+            "capacity": 10,
+            "base_station": 7,
+            "updated": false,
+            "patch": 10,
+            "sanity_check": 20,
+            "services": [],
+            "coordinates": [
+                5,
+                1
+            ]
+        },
+        {
+            "id": 8,
+            "capacity": 10,
+            "base_station": 8,
+            "updated": false,
+            "patch": 10,
+            "sanity_check": 20,
+            "services": [],
+            "coordinates": [
+                7,
+                1
+            ]
+        },
+        {
+            "id": 9,
+            "capacity": 10,
+            "base_station": 9,
+            "updated": false,
+            "patch": 10,
+            "sanity_check": 20,
+            "services": [],
+            "coordinates": [
+                0,
+                2
+            ]
+        },
+        {
+            "id": 10,
+            "capacity": 10,
+            "base_station": 10,
+            "updated": false,
+            "patch": 10,
+            "sanity_check": 20,
+            "services": [],
+            "coordinates": [
+                2,
+                2
+            ]
+        },
+        {
+            "id": 11,
+            "capacity": 10,
+            "base_station": 11,
+            "updated": false,
+            "patch": 10,
+            "sanity_check": 20,
+            "services": [],
+            "coordinates": [
+                4,
+                2
+            ]
+        },
+        {
+            "id": 12,
+            "capacity": 10,
+            "base_station": 12,
+            "updated": false,
+            "patch": 10,
+            "sanity_check": 20,
+            "services": [],
+            "coordinates": [
+                6,
+                2
+            ]
+        },
+        {
+            "id": 13,
+            "capacity": 10,
+            "base_station": 13,
+            "updated": false,
+            "patch": 10,
+            "sanity_check": 20,
+            "services": [],
+            "coordinates": [
+                1,
+                3
+            ]
+        },
+        {
+            "id": 14,
+            "capacity": 10,
+            "base_station": 14,
+            "updated": false,
+            "patch": 10,
+            "sanity_check": 20,
+            "services": [],
+            "coordinates": [
+                3,
+                3
+            ]
+        },
+        {
+            "id": 15,
+            "capacity": 10,
+            "base_station": 15,
+            "updated": false,
+            "patch": 10,
+            "sanity_check": 20,
+            "services": [],
+            "coordinates": [
+                5,
+                3
+            ]
+        },
+        {
+            "id": 16,
+            "capacity": 10,
+            "base_station": 16,
+            "updated": false,
+            "patch": 10,
+            "sanity_check": 20,
+            "services": [],
+            "coordinates": [
+                7,
+                3
+            ]
+        }
+    ],
+    "users": [
+        {
+            "id": 1,
+            "base_station": {
+                "type": "BaseStation",
+                "id": 14
+            },
+            "applications": [
+                {
+                    "id": 1,
+                    "delay_sla": 15,
+                    "communication_path": [
+                        {
+                            "type": "BaseStation",
+                            "id": 14
+                        }
+                    ]
+                }
+            ],
+            "coordinates_trace": [
+                [
+                    3,
+                    3
+                ]
+            ]
+        },
+        {
+            "id": 2,
+            "base_station": {
+                "type": "BaseStation",
+                "id": 9
+            },
+            "applications": [
+                {
+                    "id": 2,
+                    "delay_sla": 15,
+                    "communication_path": [
+                        {
+                            "type": "BaseStation",
+                            "id": 9
+                        },
+                        {
+                            "type": "BaseStation",
+                            "id": 13
+                        }
+                    ]
+                }
+            ],
+            "coordinates_trace": [
+                [
+                    0,
+                    2
+                ]
+            ]
+        },
+        {
+            "id": 3,
+            "base_station": {
+                "type": "BaseStation",
+                "id": 6
+            },
+            "applications": [
+                {
+                    "id": 3,
+                    "delay_sla": 15,
+                    "communication_path": [
+                        {
+                            "type": "BaseStation",
+                            "id": 6
+                        },
+                        {
+                            "type": "BaseStation",
+                            "id": 10
+                        }
+                    ]
+                }
+            ],
+            "coordinates_trace": [
+                [
+                    3,
+                    1
+                ]
+            ]
+        },
+        {
+            "id": 4,
+            "base_station": {
+                "type": "BaseStation",
+                "id": 13
+            },
+            "applications": [
+                {
+                    "id": 4,
+                    "delay_sla": 15,
+                    "communication_path": [
+                        {
+                            "type": "BaseStation",
+                            "id": 13
+                        }
+                    ]
+                }
+            ],
+            "coordinates_trace": [
+                [
+                    1,
+                    3
+                ]
+            ]
+        },
+        {
+            "id": 5,
+            "base_station": {
+                "type": "BaseStation",
+                "id": 11
+            },
+            "applications": [
+                {
+                    "id": 5,
+                    "delay_sla": 15,
+                    "communication_path": [
+                        {
+                            "type": "BaseStation",
+                            "id": 11
+                        },
+                        {
+                            "type": "BaseStation",
+                            "id": 10
+                        }
+                    ]
+                }
+            ],
+            "coordinates_trace": [
+                [
+                    4,
+                    2
+                ]
+            ]
+        },
+        {
+            "id": 6,
+            "base_station": {
+                "type": "BaseStation",
+                "id": 12
+            },
+            "applications": [
+                {
+                    "id": 6,
+                    "delay_sla": 15,
+                    "communication_path": [
+                        {
+                            "type": "BaseStation",
+                            "id": 12
+                        },
+                        {
+                            "type": "BaseStation",
+                            "id": 11
+                        }
+                    ]
+                }
+            ],
+            "coordinates_trace": [
+                [
+                    6,
+                    2
+                ]
+            ]
+        },
+        {
+            "id": 7,
+            "base_station": {
+                "type": "BaseStation",
+                "id": 14
+            },
+            "applications": [
+                {
+                    "id": 7,
+                    "delay_sla": 15,
+                    "communication_path": [
+                        {
+                            "type": "BaseStation",
+                            "id": 14
+                        }
+                    ]
+                }
+            ],
+            "coordinates_trace": [
+                [
+                    3,
+                    3
+                ]
+            ]
+        },
+        {
+            "id": 8,
+            "base_station": {
+                "type": "BaseStation",
+                "id": 15
+            },
+            "applications": [
+                {
+                    "id": 8,
+                    "delay_sla": 15,
+                    "communication_path": [
+                        {
+                            "type": "BaseStation",
+                            "id": 15
+                        },
+                        {
+                            "type": "BaseStation",
+                            "id": 11
+                        }
+                    ]
+                }
+            ],
+            "coordinates_trace": [
+                [
+                    5,
+                    3
+                ]
+            ]
+        },
+        {
+            "id": 9,
+            "base_station": {
+                "type": "BaseStation",
+                "id": 7
+            },
+            "applications": [
+                {
+                    "id": 9,
+                    "delay_sla": 15,
+                    "communication_path": [
+                        {
+                            "type": "BaseStation",
+                            "id": 7
+                        },
+                        {
+                            "type": "BaseStation",
+                            "id": 11
+                        }
+                    ]
+                }
+            ],
+            "coordinates_trace": [
+                [
+                    5,
+                    1
+                ]
+            ]
+        }
+    ],
+    "applications": [
+        {
+            "id": 1,
+            "network_demand": 3,
+            "services": [
+                1
+            ],
+            "users": [
+                1
+            ]
+        },
+        {
+            "id": 2,
+            "network_demand": 3,
+            "services": [
+                2
+            ],
+            "users": [
+                2
+            ]
+        },
+        {
+            "id": 3,
+            "network_demand": 3,
+            "services": [
+                3
+            ],
+            "users": [
+                3
+            ]
+        },
+        {
+            "id": 4,
+            "network_demand": 3,
+            "services": [
+                4
+            ],
+            "users": [
+                4
+            ]
+        },
+        {
+            "id": 5,
+            "network_demand": 3,
+            "services": [
+                5
+            ],
+            "users": [
+                5
+            ]
+        },
+        {
+            "id": 6,
+            "network_demand": 3,
+            "services": [
+                6
+            ],
+            "users": [
+                6
+            ]
+        },
+        {
+            "id": 7,
+            "network_demand": 3,
+            "services": [
+                7
+            ],
+            "users": [
+                7
+            ]
+        },
+        {
+            "id": 8,
+            "network_demand": 3,
+            "services": [
+                8
+            ],
+            "users": [
+                8
+            ]
+        },
+        {
+            "id": 9,
+            "network_demand": 3,
+            "services": [
+                9
+            ],
+            "users": [
+                9
+            ]
+        }
+    ],
+    "services": [
+        {
+            "id": 1,
+            "demand": 5,
+            "server": {
+                "type": "EdgeServer",
+                "id": 14
+            },
+            "application": 1
+        },
+        {
+            "id": 2,
+            "demand": 7,
+            "server": {
+                "type": "EdgeServer",
+                "id": 13
+            },
+            "application": 2
+        },
+        {
+            "id": 3,
+            "demand": 5,
+            "server": {
+                "type": "EdgeServer",
+                "id": 10
+            },
+            "application": 3
+        },
+        {
+            "id": 4,
+            "demand": 2,
+            "server": {
+                "type": "EdgeServer",
+                "id": 13
+            },
+            "application": 4
+        },
+        {
+            "id": 5,
+            "demand": 4,
+            "server": {
+                "type": "EdgeServer",
+                "id": 10
+            },
+            "application": 5
+        },
+        {
+            "id": 6,
+            "demand": 2,
+            "server": {
+                "type": "EdgeServer",
+                "id": 11
+            },
+            "application": 6
+        },
+        {
+            "id": 7,
+            "demand": 5,
+            "server": {
+                "type": "EdgeServer",
+                "id": 14
+            },
+            "application": 7
+        },
+        {
+            "id": 8,
+            "demand": 1,
+            "server": {
+                "type": "EdgeServer",
+                "id": 11
+            },
+            "application": 8
+        },
+        {
+            "id": 9,
+            "demand": 6,
+            "server": {
+                "type": "EdgeServer",
+                "id": 11
+            },
+            "application": 9
+        }
+    ],
+    "network": {
+        "links": [
+            {
+                "id": 1,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 1
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 2
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 2,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 2
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 3
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 3,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 3
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 4
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 4,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 1
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 5
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 5,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 2
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 5
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 6,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 6
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 2
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 7,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 6
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 3
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 8,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 7
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 3
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 9,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 7
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 4
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 10,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 8
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 4
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 11,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 5
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 6
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 12,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 6
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 7
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 13,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 6
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 7
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 14,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 7
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 8
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 15,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 9
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 5
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 16,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 10
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 5
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 17,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 10
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 6
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 18,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 11
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 6
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 19,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 11
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 7
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 20,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 12
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 7
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 21,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 12
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 8
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 22,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 9
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 10
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 23,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 10
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 11
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 24,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 11
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 12
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 25,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 13
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 9
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 26,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 13
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 10
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 27,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 14
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 10
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 28,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 14
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 11
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 29,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 15
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 11
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 30,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 15
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 12
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 31,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 16
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 12
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 32,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 13
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 14
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 33,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 14
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 15
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            },
+            {
+                "id": 34,
+                "nodes": [
+                    {
+                        "type": "BaseStation",
+                        "id": 15
+                    },
+                    {
+                        "type": "BaseStation",
+                        "id": 16
+                    }
+                ],
+                "delay": 5,
+                "bandwidth": 10
+            }
+        ]
+    }
+}

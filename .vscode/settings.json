@@ -1,0 +1,11 @@
+{
+    "cSpell.words": [
+        "Laxus",
+        "networkx",
+        "salus",
+        "slas"
+    ],
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportMissingImports": "none"
+    }
+}
