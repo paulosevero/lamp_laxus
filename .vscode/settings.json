@@ -1,9 +1,12 @@
 {
     "cSpell.words": [
+        "Barabási",
         "Laxus",
         "networkx",
+        "pymoo",
         "salus",
-        "slas"
+        "slas",
+        "tolist"
     ],
     "python.analysis.diagnosticSeverityOverrides": {
         "reportMissingImports": "none"
