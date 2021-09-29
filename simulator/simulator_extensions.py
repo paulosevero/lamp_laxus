@@ -8,8 +8,18 @@ from edge_sim_py.components.user import User
 from edge_sim_py.components.application import Application
 from edge_sim_py.components.service import Service
 
+# Maintenance-related methods
+from simulator.edge_server_extensions import outdated
+from simulator.edge_server_extensions import updated
+from simulator.edge_server_extensions import ready_to_update
+from simulator.edge_server_extensions import can_host_services
+from simulator.edge_server_extensions import update
+from simulator.service_extensions import migrate
+
 # Python libraries
 import json
+import typing
+import time
 
 
 def load_maintenance_attributes(self, input_file: str):
@@ -34,6 +44,17 @@ def load_maintenance_attributes(self, input_file: str):
             server.updated = server_data["updated"]
             server.patch = server_data["patch"]
             server.sanity_check = server_data["sanity_check"]
+            server.update_metadata = {}
+
+    # Adding new methods to EdgeServer objects
+    EdgeServer.outdated = outdated
+    EdgeServer.updated = updated
+    EdgeServer.ready_to_update = ready_to_update
+    EdgeServer.can_host_services = can_host_services
+    EdgeServer.update = update
+
+    # Adding new methods to Service objects
+    Service.migrate = migrate
 
 
 def show_simulated_environment():
@@ -60,3 +81,264 @@ def show_simulated_environment():
         print(
             f"    {app}. Service: {service} ({service.demand}). Comm Path: {user.communication_paths[app]}. Delay: {delay}"
         )
+
+
+def update_state(self, step: int):
+    """Updates the system state.
+
+    Args:
+        step (int): Current simulation time step.
+    """
+    self.current_step = step
+
+    # Updating user communication paths
+    for user in User.all():
+        for application in user.applications:
+            user.set_communication_path(app=application)
+
+
+def run(self, algorithm: typing.Callable):
+    """Executes the simulation.
+
+    Args:
+        algorithm (typing.Callable): Algorithm that will be executed during simulation.
+    """
+    self.set_simulator_attribute_inside_objects()
+
+    # Adding a reference to the network topology inside the Simulator instance
+    self.topology = Topology.first()
+
+    # Creating an empty list to accommodate the simulation metrics
+    algorithm_name = f"{str(algorithm).split(' ')[1]}-{time.time()}"
+    self.metrics[algorithm_name] = []
+
+    # Storing original objects state
+    self.store_original_state()
+
+    # Resetting simulation time attributes
+    self.current_step = 0
+    self.maintenance_batches = 0
+
+    # The simulation continues until all servers are updated
+    while len(EdgeServer.outdated()) > 0:
+        # Incrementing the number of maintenance batches
+        self.maintenance_batches += 1
+
+        # Updating system state according to the new simulation time step
+        self.update_state(step=self.current_step + 1)
+
+        # Executing user-specified algorithm
+        algorithm()
+
+        # Collecting metrics for the current simulation step
+        self.collect_metrics(algorithm=algorithm_name)
+
+    # Restoring original objects state
+    self.restore_original_state()
+
+
+def store_original_state(self):
+    """Stores the original state of all objects in the simulator."""
+    # Edge servers update status
+    self.original_system_state["edge_servers"] = {}
+    for edge_server in EdgeServer.all():
+        self.original_system_state["edge_servers"][edge_server] = {"updated": edge_server.updated}
+
+    # Services placement
+    self.original_system_state["services"] = {}
+    for service in Service.all():
+        self.original_system_state["services"][service] = {"server": service.server}
+
+    # Users locations and applications routing
+    self.original_system_state["users"] = {}
+    for user in User.all():
+        self.original_system_state["users"][user] = {
+            "base_station": user.base_station,
+            "communication_paths": user.communication_paths.copy(),
+        }
+
+
+def restore_original_state(self):
+    """Restores the original state of all objects in the simulator."""
+    # Edge servers update status
+    for edge_server in EdgeServer.all():
+        edge_server.updated = self.original_system_state["edge_servers"][edge_server]["updated"]
+
+    # Services placement
+    for service in Service.all():
+        server = self.original_system_state["services"][service]["server"]
+        if server is not None:
+            service.migrate(target_server=server)
+        service.migrations = []
+
+    # Users locations and applications routing
+    for user in User.all():
+        user.coordinates = user.coordinates_trace[0]
+        user.base_station = self.original_system_state["users"][user]["base_station"]
+        for application in user.applications:
+            user.set_communication_path(
+                app=application,
+                communication_path=self.original_system_state["users"][user]["communication_paths"][application],
+            )
+
+
+def collect_metrics(self, algorithm: str):
+    """Collects simulation metrics.
+
+    Args:
+        algorithm (str): Name of the algorithm being executed.
+    """
+
+    # Collecting generic metrics
+    current_batch_duration = 0
+
+    for service in Service.all():
+        for migration in service.migrations:
+            if migration["batch"] == self.maintenance_batches:
+                current_batch_duration += migration["duration"]
+
+    updates_in_the_current_batch = []
+    for edge_server in EdgeServer.all():
+        if (
+            edge_server.updated
+            and "maintenance_batch" in edge_server.update_metadata
+            and edge_server.update_metadata["maintenance_batch"] == self.maintenance_batches
+        ):
+            updates_in_the_current_batch.append(edge_server.update_metadata["duration"])
+
+    if len(updates_in_the_current_batch) > 0:
+        current_batch_duration = max(updates_in_the_current_batch)
+
+    # Calculating the overall maintenance duration (time elapsed in the current and previous batches)
+    previous_batches_duration = sum(
+        previous_batch_metrics["batch_duration"] for previous_batch_metrics in self.metrics[algorithm]
+    )
+    maintenance_duration = previous_batches_duration + current_batch_duration
+
+    # Collecting edgeServer-related metrics
+    used_servers = 0
+    updated_servers = 0
+    outdated_servers = 0
+    for edge_server in EdgeServer.all():
+        # Number of servers used to accommodate services
+        if len(edge_server.services) > 0:
+            used_servers += 1
+
+        # Number of outdated and updated servers
+        if edge_server.updated:
+            updated_servers += 1
+        else:
+            outdated_servers += 1
+
+    # Vulnerability surface
+    vulnerability_surface = outdated_servers * maintenance_duration
+
+    # Collecting application-related metrics
+    sla_violations = 0
+    safeguarded_services = 0
+    vulnerable_services = 0
+    migrations = []
+    for application in Application.all():
+        user = application.users[0]
+
+        # Number of SLA Violations
+        if user.delays[application] > user.delay_slas[application]:
+            sla_violations += 1
+
+        for service in application.services:
+            # Number of safeguarded and vulnerable services. Servers are
+            # safeguarded when their servers are updated and vulnerable otherwise)
+            if service.server.updated:
+                safeguarded_services += 1
+            else:
+                vulnerable_services += 1
+
+            for migration in service.migrations:
+                if migration["batch"] == self.maintenance_batches:
+                    migrations.append(migration["duration"])
+
+        if len(migrations) > 0:
+            overall_migration_duration = sum(migrations)
+            longest_migration_duration = max(migrations)
+            average_migration_duration = sum(migrations) / len(migrations)
+        else:
+            overall_migration_duration = 0
+            longest_migration_duration = 0
+            average_migration_duration = 0
+
+    # Creating the structure to accommodate simulation metrics for the current maintenance batch
+    self.metrics[algorithm].append(
+        {
+            "batch": self.maintenance_batches,
+            "batch_duration": current_batch_duration,
+            "overall_maintenance_duration": maintenance_duration,
+            "used_servers": used_servers,
+            "updated_servers": updated_servers,
+            "outdated_servers": outdated_servers,
+            "vulnerability_surface": vulnerability_surface,
+            "sla_violations": sla_violations,
+            "safeguarded_services": safeguarded_services,
+            "vulnerable_services": vulnerable_services,
+            "migrations": len(migrations),
+            "overall_migration_duration": overall_migration_duration,
+            "average_migration_duration": average_migration_duration,
+            "longest_migration_duration": longest_migration_duration,
+        }
+    )
+
+
+def show_results(self, verbosity: bool):
+    """Displays the simulation results.
+
+    Args:
+        verbosity (bool): Controls the output verbosity.
+    """
+    for algorithm, results in self.metrics.items():
+        consolidation_rate = []
+        vulnerability_surface = 0
+        sla_violations = 0
+        migrations = 0
+        overall_migration_duration = 0
+        average_migration_duration = []
+        longest_migration_duration = 0
+
+        print(f"\nAlgorithm: {algorithm}")
+        for batch_results in results:
+            consolidation_rate.append(100 - (batch_results["used_servers"] * 100 / EdgeServer.count()))
+            vulnerability_surface += batch_results["vulnerability_surface"]
+            sla_violations += batch_results["sla_violations"]
+            migrations += batch_results["migrations"]
+            overall_migration_duration += batch_results["overall_migration_duration"]
+            average_migration_duration.append(batch_results["average_migration_duration"])
+            if longest_migration_duration < batch_results["longest_migration_duration"]:
+                longest_migration_duration = batch_results["longest_migration_duration"]
+
+            if verbosity:
+                print(f"    Maintenance Batch {batch_results['batch']} (duration={batch_results['batch_duration']}):")
+                print(f"        Maintenance Duration: {batch_results['overall_maintenance_duration']}")
+                print(f"        Used Servers: {batch_results['used_servers']}")
+                print(f"        Updated Servers: {batch_results['updated_servers']}")
+                print(f"        Outdated Servers: {batch_results['outdated_servers']}")
+                print(f"        Vulnerability Surface: {batch_results['vulnerability_surface']}")
+                print(f"        SLA Violations: {batch_results['sla_violations']}")
+                print(f"        Safeguarded Services: {batch_results['safeguarded_services']}")
+                print(f"        Vulnerable Services: {batch_results['vulnerable_services']}")
+                print(f"        Number of Migrations: {batch_results['migrations']}")
+                print(f"        Overall Migration_duration: {batch_results['overall_migration_duration']}")
+                print(f"        Average Migration_duration: {batch_results['average_migration_duration']}")
+                print(f"        Longest Migration_duration: {batch_results['longest_migration_duration']}")
+
+        consolidation_rate = sum(consolidation_rate) / len(consolidation_rate)
+        average_migration_duration = sum(average_migration_duration) / len(average_migration_duration)
+
+        print("    Overall:")
+        print(f"        Maintenance Batches: {len(results)}")
+        print(f"        Maintenance Duration: {results[-1]['overall_maintenance_duration']}")
+        print(f"        Consolidation Rate: {consolidation_rate}")
+        print(f"        Average Migration Duration: {average_migration_duration}")
+        print(f"        Vulnerability Surface: {vulnerability_surface}")
+        print(f"        SLA Violations: {sla_violations}")
+        print(f"        Migrations: {migrations}")
+        print(f"        Overall Migration Duration: {overall_migration_duration}")
+        print(f"        Average Migration Duration: {average_migration_duration}")
+        print(f"        Longest Migration Duration: {longest_migration_duration}")
