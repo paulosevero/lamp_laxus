@@ -33,7 +33,7 @@ class MyDisplay(Display):
         migrations = int(np.mean(algorithm.pop.get("F")[:, 2]))
         swaps = int(np.mean(algorithm.pop.get("F")[:, 3]))
 
-        self.output.append("SVs Emptied", outdated_servers_occupied)
+        self.output.append("Outd. SVs Used", outdated_servers_occupied)
         self.output.append("Swaps", swaps)
         self.output.append("SLA viol.", sla_violations)
         self.output.append("Migrations", migrations)
@@ -123,6 +123,7 @@ def get_allocation_scheme(n_gen: int, pop_size: int, sampling: str, cross: str, 
         sampling=get_sampling(sampling),
         crossover=get_crossover(cross, prob=cross_prob),
         mutation=get_mutation(mutation, prob=1 / Service.count()),
+        eliminate_duplicates=False,
     )
 
     problem = PlacementProblem()
@@ -151,16 +152,10 @@ def get_allocation_scheme(n_gen: int, pop_size: int, sampling: str, cross: str, 
         ),
     )
 
-    print(f"SOLUTION: {solutions[0]['fitness']}. {solutions[0]['overloaded_servers']}.")
-
     return solutions[0]["placement"]
 
 
-def laxus():
-    print(
-        f"Maintenance Batch {EdgeServer.first().simulator.maintenance_batches}. Outdated Servers: {len(EdgeServer.outdated())}"
-    )
-
+def laxus(arguments: dict):
     # Patching outdated edge servers hosting no services
     servers_to_patch = [server for server in EdgeServer.all() if not server.updated and len(server.services) == 0]
     if len(servers_to_patch) > 0:
@@ -170,7 +165,12 @@ def laxus():
     # Migrating services to drain outdated edge servers
     else:
         allocation_scheme = get_allocation_scheme(
-            n_gen=500, pop_size=100, sampling="int_random", cross="int_ux", cross_prob=0.75, mutation="int_pm"
+            n_gen=arguments["n_gen"],
+            pop_size=arguments["pop_size"],
+            sampling=arguments["sampling"],
+            cross=arguments["cross"],
+            cross_prob=arguments["cross_prob"],
+            mutation=arguments["mutation"],
         )
 
         for service_id, server_id in enumerate(allocation_scheme, 1):
@@ -178,9 +178,6 @@ def laxus():
             service = Service.instances[service_id - 1]
 
             if service.server != server:
-                print(
-                    f"[{EdgeServer.first().simulator.maintenance_batches}] Migration Happening. {service} from {service.server} to {server}"
-                )
                 service.migrate(server)
 
                 app = service.application

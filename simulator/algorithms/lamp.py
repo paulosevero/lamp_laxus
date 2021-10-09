@@ -1,9 +1,31 @@
-""" Contains Salus maintenance algorithm."""
+""" Contains Location-Aware Maintenance Policy (LAMP) maintenance algorithm."""
 # EdgeSimPy components
 from edge_sim_py.components.edge_server import EdgeServer
 
+# Python libraries
+import networkx as nx
 
-def salus(arguments: dict):
+
+def get_delay(user_base_station: object, origin: object, target: object) -> int:
+    """Gets the distance (in terms of delay) between two elements (origin and target).
+
+    Args:
+        user_base_station (object): Base station used by the user to access the edge network.
+        origin (object): Origin object.
+        target (object): Target object.
+
+    Returns:
+        int: Delay between origin and target.
+    """
+    topology = origin.simulator.topology
+
+    path = nx.shortest_path(G=topology, source=origin.base_station, target=target.base_station, weight="delay")
+    delay = topology.calculate_path_delay(path=path) + user_base_station.wireless_delay
+
+    return delay
+
+
+def lamp(arguments: dict):
     # Patching outdated edge servers hosting no services
     servers_to_patch = [server for server in EdgeServer.all() if not server.updated and len(server.services) == 0]
     if len(servers_to_patch) > 0:
@@ -36,8 +58,27 @@ def salus(arguments: dict):
                 for _ in range(len(server.services)):
                     service = services.pop(0)
 
-                    # Prioritizing updated servers with less space remaining
-                    candidate_servers = sorted(candidate_servers, key=lambda c: (-c.updated, c.capacity - c.demand))
+                    application = service.application
+                    user = application.users[0]
+                    sla = user.delay_slas[application]
+
+                    # Sorting criteria: update status, violates SLA, occupation rate
+                    candidate_servers = sorted(
+                        candidate_servers,
+                        key=lambda c: (
+                            get_delay(user_base_station=user.base_station, origin=c, target=server) > sla,
+                            -c.updated,
+                            c.capacity - c.demand,
+                        ),
+                    )
+
+                    # if sla < 120:
+                    #     for c in candidate_servers:
+                    #         delay = get_delay(user_base_station=user.base_station, origin=c, target=server)
+                    #         violates_sla = delay > sla
+                    #         print(f"{c}. SLA: {sla}. Delay: {delay}. Violates SLA: {violates_sla}")
+
+                    #     exit(1)
 
                     for candidate_host in candidate_servers:
                         if candidate_host.capacity >= candidate_host.demand + service.demand:

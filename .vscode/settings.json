@@ -3,6 +3,7 @@
         "Barabási",
         "Laxus",
         "networkx",
+        "popen",
         "pymoo",
         "salus",
         "slas",

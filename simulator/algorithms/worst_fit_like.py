@@ -3,7 +3,7 @@
 from edge_sim_py.components.edge_server import EdgeServer
 
 
-def worst_fit_like():
+def worst_fit_like(arguments: dict):
     # Patching outdated edge servers hosting no services
     servers_to_patch = [server for server in EdgeServer.all() if not server.updated and len(server.services) == 0]
     if len(servers_to_patch) > 0:

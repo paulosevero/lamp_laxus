@@ -22,9 +22,11 @@ from simulator.algorithms.worst_fit_like import worst_fit_like
 from simulator.algorithms.greedy_least_batch import greedy_least_batch
 from simulator.algorithms.salus import salus
 from simulator.algorithms.laxus import laxus
+from simulator.algorithms.lamp import lamp
 
 # Python libraries
 import random
+import argparse
 
 
 VERBOSE = False
@@ -48,7 +50,9 @@ def add_maintenance_features(simulator: object, dataset: str):
         show_simulated_environment()
 
 
-def main():
+def main(
+    dataset: str, algorithm: str, n_gen: int, pop_size: int, sampling: str, cross: str, cross_prob: float, mutation: str
+):
     """Executes the simulation."""
     # Defining a seed value to allow reproducibility
     random.seed(1)
@@ -57,22 +61,62 @@ def main():
     simulator = Simulator()
 
     # Loading the dataset
-    dataset = "datasets/dataset1.json"
+    dataset = f"datasets/{dataset}.json"
 
     simulator.load_dataset(input_file=dataset)
 
     # Extending EdgeSimPy with maintenance features
     add_maintenance_features(simulator=simulator, dataset=dataset)
 
-    simulator.run(algorithm=first_fit_like)
-    simulator.run(algorithm=worst_fit_like)
-    simulator.run(algorithm=best_fit_like)
-    simulator.run(algorithm=greedy_least_batch)
-    simulator.run(algorithm=salus)
-    # simulator.run(algorithm=laxus)
+    arguments = {
+        "n_gen": n_gen,
+        "pop_size": pop_size,
+        "sampling": sampling,
+        "cross": cross,
+        "cross_prob": cross_prob,
+        "mutation": mutation,
+    }
+
+    if algorithm in globals():
+        simulator.run(algorithm=globals()[algorithm], arguments=arguments)
+    else:
+        raise Exception("Invalid algorithm name.")
 
     simulator.show_results(verbosity=VERBOSE)
 
 
 if __name__ == "__main__":
-    main()
+    # Parsing named arguments from the command line
+    parser = argparse.ArgumentParser()
+
+    # Generic arguments
+    parser.add_argument("--dataset", "-d", help="Dataset file")
+    parser.add_argument("--algorithm", "-a", help="Maintenance algorithm that will be executed")
+
+    # Laxus-specific arguments
+    parser.add_argument("--n_gen", help="Number of generations", default="0")
+    parser.add_argument("--pop_size", help="Population size", default="0")
+    parser.add_argument("--sampling", help="Sampling method", default="int_random")
+    parser.add_argument("--cross", help="Crossover method", default="int_ux")
+    parser.add_argument("--cross_prob", help="Crossover probability (0.0 to 1.0)", default="0")
+    parser.add_argument("--mutation", help="Mutation method", default="int_pm")
+
+    args = parser.parse_args()
+
+    n_gen = int(args.n_gen)
+    pop_size = int(args.pop_size)
+    sampling = args.sampling
+    cross = args.cross
+    cross_prob = float(args.cross_prob)
+    mutation = args.mutation
+
+    main(
+        dataset=args.dataset,
+        algorithm=args.algorithm,
+        n_gen=n_gen,
+        pop_size=pop_size,
+        sampling=sampling,
+        cross=cross,
+        cross_prob=cross_prob,
+        mutation=mutation,
+    )
