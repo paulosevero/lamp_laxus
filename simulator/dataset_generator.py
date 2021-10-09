@@ -112,7 +112,7 @@ EdgeServerBuilder.set_sanity_checks_all_edge_servers = set_sanity_checks_all_edg
 simulation_steps = 1
 
 # Creating list of hexagons to represent the map
-map_coordinates = create_hexagonal_grid(x_size=8, y_size=8)
+map_coordinates = create_hexagonal_grid(x_size=12, y_size=12)
 
 # Creating base stations
 n_base_stations = len(map_coordinates)
@@ -129,14 +129,14 @@ edge_server_builder = EdgeServerBuilder()
 edge_server_builder.create_objects(n_objects=n_edge_servers)
 edge_servers_coordinates = random.sample(map_coordinates, n_edge_servers)
 edge_server_builder.set_coordinates_all_edge_servers(coordinates=edge_servers_coordinates)
-edge_servers_capacity = uniform(n_items=n_edge_servers, valid_values=[10, 15], shuffle_distribution=True)
+edge_servers_capacity = uniform(n_items=n_edge_servers, valid_values=[150, 200], shuffle_distribution=True)
 edge_server_builder.set_capacity_all_edge_servers(capacity_values=edge_servers_capacity)
 
 edge_servers_update_statuses = uniform(n_items=n_edge_servers, valid_values=[False], shuffle_distribution=True)
 edge_server_builder.set_update_status_all_edge_servers(update_statuses=edge_servers_update_statuses)
-edge_servers_patches = uniform(n_items=n_edge_servers, valid_values=[60, 120], shuffle_distribution=True)
+edge_servers_patches = uniform(n_items=n_edge_servers, valid_values=[250, 500], shuffle_distribution=True)
 edge_server_builder.set_patches_all_edge_servers(patch_values=edge_servers_patches)
-edge_servers_sanity_checks = uniform(n_items=n_edge_servers, valid_values=[100, 150], shuffle_distribution=True)
+edge_servers_sanity_checks = uniform(n_items=n_edge_servers, valid_values=[300, 600], shuffle_distribution=True)
 edge_server_builder.set_sanity_checks_all_edge_servers(sanity_check_values=edge_servers_sanity_checks)
 
 
@@ -152,7 +152,7 @@ services_per_application = uniform(n_items=n_applications, valid_values=[1], shu
 n_services = sum(services_per_application)
 service_builder = ServiceBuilder()
 service_builder.create_objects(n_objects=n_services)
-service_demands = uniform(n_items=n_services, valid_values=[1, 2, 3, 4], shuffle_distribution=True)
+service_demands = uniform(n_items=n_services, valid_values=[20, 40, 60], shuffle_distribution=True)
 service_builder.set_demand_all_services(demand_values=service_demands)
 
 for index, application in enumerate(Application.all()):
@@ -199,6 +199,20 @@ elif topology_name == "Partially Connected Mesh":
         link["demand"] = 0
 
 
+# Defining link attributes
+n_links = len(list(topology.edges))
+link_bandwidths = uniform(n_items=n_links, valid_values=[5, 10], shuffle_distribution=True)
+link_delays = uniform(n_items=n_links, valid_values=[5, 10], shuffle_distribution=True)
+
+for link in topology.edges(data=True):
+    topology[link[0]][link[1]]["bandwidth"] = link_bandwidths[0]
+    topology[link[0]][link[1]]["delay"] = link_delays[0]
+
+    # Updating attribute lists after the link is updated
+    link_bandwidths.pop(0)
+    link_delays.pop(0)
+
+
 # Creating users
 n_users = n_applications
 user_builder = UserBuilder()
@@ -211,7 +225,7 @@ user_builder.set_pathway_mobility_all_users(
 users_per_application = uniform(n_items=n_users, valid_values=[1], shuffle_distribution=True)
 
 for index, user in enumerate(User.all()):
-    delay_slas = uniform(n_items=users_per_application[index], valid_values=[60, 120], shuffle_distribution=True)
+    delay_slas = uniform(n_items=users_per_application[index], valid_values=[30, 60], shuffle_distribution=True)
 
     for i in range(users_per_application[index]):
         application = next((application for application in Application.all() if len(application.users) <= i), None)
