@@ -72,18 +72,16 @@ def lamp(arguments: dict):
                         ),
                     )
 
-                    # if sla < 120:
-                    #     for c in candidate_servers:
-                    #         delay = get_delay(user_base_station=user.base_station, origin=c, target=server)
-                    #         violates_sla = delay > sla
-                    #         print(f"{c}. SLA: {sla}. Delay: {delay}. Violates SLA: {violates_sla}")
-
-                    #     exit(1)
-
                     for candidate_host in candidate_servers:
                         if candidate_host.capacity >= candidate_host.demand + service.demand:
                             # Migrating the service and storing the migration duration for post-simulation analysis
                             service.migrate(target_server=candidate_host)
+
+                            # Redefining the set of links used to communicate the user to his service
+                            app = service.application
+                            user = app.users[0]
+                            user.set_communication_path(app)
+
                             break
 
             if len(server.services) == 0:

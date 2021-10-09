@@ -91,11 +91,6 @@ def update_state(self, step: int):
     """
     self.current_step = step
 
-    # Updating user communication paths
-    for user in User.all():
-        for application in user.applications:
-            user.set_communication_path(app=application)
-
 
 def run(self, algorithm: typing.Callable, arguments: list = []):
     """Executes the simulation.
@@ -341,17 +336,38 @@ def show_results(self, verbosity: bool):
         consolidation_rate = sum(consolidation_rate) / len(consolidation_rate)
         average_migration_duration = sum(average_migration_duration) / len(average_migration_duration)
 
+        overall_results = [
+            len(results),
+            int(results[-1]["overall_maintenance_duration"]),
+            consolidation_rate,
+            sla_violations,
+            migrations,
+            overall_migration_duration,
+            average_migration_duration,
+            longest_migration_duration,
+            vulnerability_surface,
+            sla_violations_per_batch,
+            updated_servers_per_batch,
+            outdated_servers_per_batch,
+            maintenance_duration_per_batch,
+        ]
+
         print("    Overall:")
-        print(f"        Maintenance Batches: {len(results)}")
-        print(f"        Maintenance Duration: {int(results[-1]['overall_maintenance_duration'])}")
-        print(f"        Consolidation Rate: {consolidation_rate}")
-        print(f"        SLA Violations: {sla_violations}")
-        print(f"        Migrations: {migrations}")
-        print(f"        Overall Migration Duration: {overall_migration_duration}")
-        print(f"        Average Migration Duration: {average_migration_duration}")
-        print(f"        Longest Migration Duration: {longest_migration_duration}")
-        print(f"        Vulnerability Surface: {vulnerability_surface}")
-        print(f"        SLA Violations per Batch: {sla_violations_per_batch}")
-        print(f"        Updated Servers per Batch: {updated_servers_per_batch}")
-        print(f"        Outdated Servers per Batch: {outdated_servers_per_batch}")
-        print(f"        Maintenance Duration per Batch: {maintenance_duration_per_batch}")
+        print(f"        Maintenance Batches: {overall_results[0]}")
+        print(f"        Maintenance Duration: {overall_results[1]}")
+        print(f"        Consolidation Rate: {overall_results[2]}")
+        print(f"        SLA Violations: {overall_results[3]}")
+        print(f"        Migrations: {overall_results[4]}")
+        print(f"        Overall Migration Duration: {overall_results[5]}")
+        print(f"        Average Migration Duration: {overall_results[6]}")
+        print(f"        Longest Migration Duration: {overall_results[7]}")
+        print(f"        Vulnerability Surface: {overall_results[8]}")
+        print(f"        SLA Violations per Batch: {overall_results[9]}")
+        print(f"        Updated Servers per Batch: {overall_results[10]}")
+        print(f"        Outdated Servers per Batch: {overall_results[11]}")
+        print(f"        Maintenance Duration per Batch: {overall_results[12]}")
+
+        print(f"        CSV-READY RESULTS: ", end="")
+        for metric in overall_results:
+            print(f"{metric}", end="\t")
+        print("")

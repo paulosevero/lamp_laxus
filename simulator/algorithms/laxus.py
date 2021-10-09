@@ -16,6 +16,7 @@ from pymoo.optimize import minimize
 from pymoo.algorithms.moo.nsga2 import NSGA2
 from pymoo.factory import get_sampling, get_crossover, get_mutation
 
+VERBOSE = False
 PARALLEL = False
 N_THREADS = 4
 
@@ -31,10 +32,8 @@ class MyDisplay(Display):
         sla_violations = int(np.mean(algorithm.pop.get("F")[:, 0]))
         outdated_servers_occupied = int(np.mean(algorithm.pop.get("F")[:, 1]))
         migrations = int(np.mean(algorithm.pop.get("F")[:, 2]))
-        swaps = int(np.mean(algorithm.pop.get("F")[:, 3]))
 
-        self.output.append("Outd. SVs Used", outdated_servers_occupied)
-        self.output.append("Swaps", swaps)
+        self.output.append("Out. SVs Used", outdated_servers_occupied)
         self.output.append("SLA viol.", sla_violations)
         self.output.append("Migrations", migrations)
 
@@ -64,10 +63,6 @@ class PlacementProblem(Problem):
         sla_violations = 0
         outdated_servers_occupied = []
         migrations = 0
-        migrations_to_servers_being_drained = 0
-
-        # Gathering the list of servers being drained
-        servers_being_drained = []
 
         # Gathering edge servers capacity
         edge_servers_capacity = [edge_server.capacity for edge_server in EdgeServer.all()]
@@ -105,14 +100,10 @@ class PlacementProblem(Problem):
             # Objective 3: minimize the number of migrations
             if service.server != server:
                 migrations += 1
-                servers_being_drained.append(service.server.id)
-
-                if server.id in servers_being_drained:
-                    migrations_to_servers_being_drained += 1
 
         outdated_servers_occupied = len(outdated_servers_occupied)
         overloaded_servers = sum([1 for item in edge_servers_capacity if item < 0])
-        fitness = (sla_violations, outdated_servers_occupied, migrations, migrations_to_servers_being_drained)
+        fitness = (sla_violations, outdated_servers_occupied, migrations)
 
         return (fitness, overloaded_servers)
 
@@ -127,16 +118,15 @@ def get_allocation_scheme(n_gen: int, pop_size: int, sampling: str, cross: str, 
     )
 
     problem = PlacementProblem()
-    res = minimize(problem, method, termination=("n_gen", n_gen), seed=1, verbose=True, display=MyDisplay())
+    res = minimize(problem, method, termination=("n_gen", n_gen), seed=1, verbose=VERBOSE, display=MyDisplay())
 
     solutions = []
     for i in range(len(res.X)):
         placement = res.X[i].tolist()
         fitness = {
-            "SLA violations": res.F[i][0],
             "Outdated servers occupied": res.F[i][1],
+            "SLA violations": res.F[i][0],
             "Migrations": res.F[i][2],
-            "Swaps": res.F[i][3],
         }
         overloaded_servers = res.CV[i][0].tolist()
         solutions.append({"placement": placement, "fitness": fitness, "overloaded_servers": overloaded_servers})
@@ -146,11 +136,12 @@ def get_allocation_scheme(n_gen: int, pop_size: int, sampling: str, cross: str, 
         key=lambda s: (
             s["overloaded_servers"],
             min_max_norm(x=s["fitness"]["Outdated servers occupied"], minimum=0, maximum=len(EdgeServer.outdated()))
-            + min_max_norm(x=s["fitness"]["Swaps"], minimum=0, maximum=len(EdgeServer.outdated())) * (1 / 2)
-            + min_max_norm(x=s["fitness"]["SLA violations"], minimum=0, maximum=Service.count()) * (1 / 3)
-            + min_max_norm(x=s["fitness"]["Migrations"], minimum=0, maximum=Service.count()) * (1 / 4),
+            + min_max_norm(x=s["fitness"]["SLA violations"], minimum=0, maximum=Service.count())
+            + min_max_norm(x=s["fitness"]["Migrations"], minimum=0, maximum=Service.count()),
         ),
     )
+
+    print(f"SOLUTION: {solutions[0]['fitness']}. {solutions[0]['overloaded_servers']}")
 
     return solutions[0]["placement"]
 
