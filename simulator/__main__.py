@@ -51,7 +51,15 @@ def add_maintenance_features(simulator: object, dataset: str):
 
 
 def main(
-    dataset: str, algorithm: str, n_gen: int, pop_size: int, sampling: str, cross: str, cross_prob: float, mutation: str
+    dataset: str,
+    algorithm: str,
+    n_gen: int,
+    pop_size: int,
+    sampling: str,
+    cross: str,
+    cross_prob: float,
+    mutation: str,
+    weights: int,
 ):
     """Executes the simulation."""
     # Defining a seed value to allow reproducibility
@@ -75,6 +83,7 @@ def main(
         "cross": cross,
         "cross_prob": cross_prob,
         "mutation": mutation,
+        "weights": weights,
     }
 
     if algorithm in globals():
@@ -100,6 +109,7 @@ if __name__ == "__main__":
     parser.add_argument("--cross", help="Crossover method", default="int_ux")
     parser.add_argument("--cross_prob", help="Crossover probability (0.0 to 1.0)", default="0")
     parser.add_argument("--mutation", help="Mutation method", default="int_pm")
+    parser.add_argument("--weights", help="Weights for selecting a solution from the Pareto-set", default="0")
 
     args = parser.parse_args()
 
@@ -109,6 +119,7 @@ if __name__ == "__main__":
     cross = args.cross
     cross_prob = float(args.cross_prob)
     mutation = args.mutation
+    weights = int(args.weights)
 
     main(
         dataset=args.dataset,
@@ -119,4 +130,5 @@ if __name__ == "__main__":
         cross=cross,
         cross_prob=cross_prob,
         mutation=mutation,
+        weights=weights,
     )

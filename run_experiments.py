@@ -8,11 +8,11 @@ import csv
 from datetime import timedelta
 
 
-def run_simulation(dataset: str, algorithm: str, n_gen: int, pop_size: int, cross_prob: float) -> dict:
+def run_simulation(dataset: str, algorithm: str, n_gen: int, pop_size: int, cross_prob: float, weights: int) -> dict:
     """Executes the simulation with specified parameters."""
     # Running the simulation based on the parameters and gathering its execution time
-    # python3 -B -m simulator --dataset example1 --algorithm laxus --pop_size 10 --n_gen 100 --cross_prob 0.75
-    cmd = f"python3 -B -m simulator --dataset {dataset} --algorithm {algorithm} --n_gen {n_gen} --pop_size {pop_size} --cross_prob {cross_prob}"
+    # python3 -B -m simulator --dataset example1 --algorithm laxus --pop_size 10 --n_gen 100 --cross_prob 0.75 --weights 0
+    cmd = f"python3 -B -m simulator --dataset {dataset} --algorithm {algorithm} --n_gen {n_gen} --pop_size {pop_size} --cross_prob {cross_prob} --weights {weights}"
 
     # Running the simulation with the specified parameters
     initial_time = time.time()
@@ -82,6 +82,7 @@ def run_simulation(dataset: str, algorithm: str, n_gen: int, pop_size: int, cros
         "n_gen": n_gen,
         "pop_size": pop_size,
         "cross_prob": cross_prob,
+        "weights": weights,
         "execution_time": execution_time,
         "maintenance_batches": maintenance_batches,
         "maintenance_duration": maintenance_duration,
@@ -102,11 +103,18 @@ def run_simulation(dataset: str, algorithm: str, n_gen: int, pop_size: int, cros
 
 
 # Parameters
+# datasets = ["dataset1"]
+# algorithms = ["laxus"]
+# population_sizes = [50]
+# number_of_generations = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
+# crossover_probabilities = [0.25, 0.5, 0.75, 1]
+# weights = [0, 1, 2, 3, 4, 5, 6]
 datasets = ["dataset1"]
 algorithms = ["laxus"]
 population_sizes = [50]
-number_of_generations = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
-crossover_probabilities = [0.25, 0.5, 0.75, 1]
+number_of_generations = [50]
+crossover_probabilities = [0.25]
+weights = [0, 1, 2, 3, 4, 5, 6]
 
 
 # Create CSV file with headers
@@ -118,6 +126,7 @@ headers = [
     "n_gen",
     "pop_size",
     "cross_prob",
+    "weights",
     "execution_time",
     "maintenance_batches",
     "maintenance_duration",
@@ -143,7 +152,7 @@ with open(output_file_name, "w") as text_file:
 
 # Generating list of combinations with the parameters specified
 combinations = list(
-    itertools.product(datasets, algorithms, population_sizes, number_of_generations, crossover_probabilities)
+    itertools.product(datasets, algorithms, population_sizes, number_of_generations, crossover_probabilities, weights)
 )
 
 # Executing simulations and collecting results
@@ -158,9 +167,12 @@ for i, parameters in enumerate(combinations, 1):
     pop_size = parameters[2]
     n_gen = parameters[3]
     cross_prob = parameters[4]
+    weights = parameters[5]
 
     print(f"[Execution {i}]")
-    print(f"    [{algorithm}] dataset = {dataset}. pop_size = {pop_size}. n_gen = {n_gen}. cross_prob = {cross_prob}")
+    print(
+        f"    [{algorithm}] dataset = {dataset}. pop_size = {pop_size}. n_gen = {n_gen}. cross_prob = {cross_prob}. weights = {weights}"
+    )
 
     # Executing algorithm
     results = run_simulation(
@@ -169,6 +181,7 @@ for i, parameters in enumerate(combinations, 1):
         pop_size=pop_size,
         n_gen=n_gen,
         cross_prob=cross_prob,
+        weights=weights,
     )
 
     print("    RESULTS:")

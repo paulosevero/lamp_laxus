@@ -21,6 +21,15 @@ ALGORITHM = "NSGA-II"
 VERBOSE = True
 PARALLEL = False
 N_THREADS = 4
+WEIGHT_OPTIONS = [
+    [1, 1, 1],
+    [1, (1 / 2), (1 / 3)],
+    [1, (1 / 3), (1 / 2)],
+    [(1 / 2), 1, (1 / 3)],
+    [(1 / 3), 1, (1 / 2)],
+    [(1 / 2), (1 / 3), 1],
+    [(1 / 3), (1 / 2), 1],
+]
 
 
 def min_max_norm(x, minimum, maximum):
@@ -117,7 +126,9 @@ class PlacementProblem(Problem):
         return (fitness, overloaded_servers)
 
 
-def get_allocation_scheme(n_gen: int, pop_size: int, sampling: str, cross: str, cross_prob: int, mutation: str) -> list:
+def get_allocation_scheme(
+    n_gen: int, pop_size: int, sampling: str, cross: str, cross_prob: int, mutation: str, weights: int
+) -> list:
     if ALGORITHM == "NSGA-II":
         method = NSGA2(
             pop_size=pop_size,
@@ -144,24 +155,28 @@ def get_allocation_scheme(n_gen: int, pop_size: int, sampling: str, cross: str, 
     for i in range(len(res.X)):
         placement = res.X[i].tolist()
         fitness = {
-            "Outd. Servers Used": res.F[i][0],
+            "Outd. SVs Used": res.F[i][0],
             "Useless Migrations": res.F[i][1],
             "SLA Violations": res.F[i][2],
         }
         overloaded_servers = res.CV[i][0].tolist()
         solutions.append({"placement": placement, "fitness": fitness, "overloaded_servers": overloaded_servers})
 
+    weights = WEIGHT_OPTIONS[weights]
+
     solutions = sorted(
         solutions,
         key=lambda s: (
             s["overloaded_servers"],
-            min_max_norm(x=s["fitness"]["Outd. Servers Used"], minimum=0, maximum=len(EdgeServer.outdated()))
-            + min_max_norm(x=s["fitness"]["Useless Migrations"], minimum=0, maximum=Service.count())
-            + min_max_norm(x=s["fitness"]["SLA Violations"], minimum=0, maximum=Service.count()),
+            min_max_norm(x=s["fitness"]["Outd. SVs Used"], minimum=0, maximum=len(EdgeServer.outdated())) * weights[0]
+            + min_max_norm(x=s["fitness"]["Useless Migrations"], minimum=0, maximum=Service.count()) * weights[1]
+            + min_max_norm(x=s["fitness"]["SLA Violations"], minimum=0, maximum=Service.count()) * weights[2],
         ),
     )
 
-    print(f"SOLUTION: {solutions[0]['fitness']}. {solutions[0]['overloaded_servers']}")
+    print(
+        f"SOLUTION: {solutions[0]['fitness']}. Overloaded SVs: {solutions[0]['overloaded_servers']}. Weights: {weights}"
+    )
 
     return solutions[0]["placement"]
 
@@ -185,6 +200,7 @@ def laxus(arguments: dict):
             cross=arguments["cross"],
             cross_prob=arguments["cross_prob"],
             mutation=arguments["mutation"],
+            weights=arguments["weights"],
         )
 
         services_hosted_by_outdated_servers = [service for service in Service.all() if not service.server.updated]
