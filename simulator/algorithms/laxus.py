@@ -14,11 +14,10 @@ from pymoo.util.display import Display
 from pymoo.core.problem import Problem
 from pymoo.optimize import minimize
 from pymoo.algorithms.moo.nsga2 import NSGA2
-from pymoo.algorithms.moo.nsga3 import NSGA3
-from pymoo.factory import get_sampling, get_crossover, get_mutation, get_reference_directions
+from pymoo.factory import get_sampling, get_crossover, get_mutation
 
-ALGORITHM = "NSGA-II"
-VERBOSE = True
+
+VERBOSE = False
 PARALLEL = False
 N_THREADS = 4
 WEIGHT_OPTIONS = [
@@ -32,31 +31,52 @@ WEIGHT_OPTIONS = [
 ]
 
 
-def min_max_norm(x, minimum, maximum):
-    return (x - minimum) / (maximum - minimum)
-
-
 class MyDisplay(Display):
-    def _do(self, problem, evaluator, algorithm):
+    """Creates a visualization on how the genetic algorithm is evolving throughout the generations."""
+
+    def _do(self, problem: object, evaluator: object, algorithm: object):
+        """Defines the way information about the genetic algorithm is printed after each generation.
+
+        Args:
+            problem (object): Instance of the problem being solved.
+            evaluator (object): Object that makes modifications before calling the problem's evaluate function.
+            algorithm (object): Algorithm being executed.
+        """
         super()._do(problem, evaluator, algorithm)
 
         outdated_servers_occupied = int(np.min(algorithm.pop.get("F")[:, 0]))
         useless_migrations = int(np.min(algorithm.pop.get("F")[:, 1]))
         sla_violations = int(np.min(algorithm.pop.get("F")[:, 2]))
 
-        self.output.append("Out.SVs Used", outdated_servers_occupied)
-        self.output.append("Useless Migr", useless_migrations)
+        self.output.append("Outdated SVs", outdated_servers_occupied)
+        self.output.append("Migr. Dur.", useless_migrations)
         self.output.append("SLA viol.", sla_violations)
 
 
 class PlacementProblem(Problem):
+    """Describes the application placement as an optimization problem."""
+
     def __init__(self, **kwargs):
-        services_on_outdated_hosts = len([1 for service in Service.all() if not service.server.updated])
+        """Initializes the problem instance."""
+        self.services_on_outdated_hosts = len([1 for service in Service.all() if not service.server.updated])
+        self.longest_migration = 0
         super().__init__(
-            n_var=services_on_outdated_hosts, n_obj=3, n_constr=1, xl=1, xu=EdgeServer.count(), type_var=int, **kwargs
+            n_var=self.services_on_outdated_hosts,
+            n_obj=3,
+            n_constr=1,
+            xl=1,
+            xu=EdgeServer.count(),
+            type_var=int,
+            **kwargs,
         )
 
     def _evaluate(self, x, out, *args, **kwargs):
+        """Evaluates solutions according to the problem objectives.
+
+        Args:
+            x (list): Solution or set of solutions that solve the problem.
+            out (dict): Output of the evaluation function.
+        """
         if PARALLEL:
             thread_pool = ThreadPool(N_THREADS)
             output = thread_pool.map(self.get_fitness_score_and_constraints, x)
@@ -68,37 +88,65 @@ class PlacementProblem(Problem):
         out["G"] = np.array([item[1] for item in output])
 
     def get_fitness_score_and_constraints(self, solution: list) -> tuple:
-        ##########################################
-        ## Calculating objectives and penalties ##
-        ##########################################
+        """Calculates the fitness score and penalties of a solution based on the problem definition.
+
+        Args:
+            solution (list): Solution that solves the problem.
+
+        Returns:
+            tuple: Output of the evaluation function containing the fitness scores of the solution and its penalties.
+        """
+        topology = Topology.first()
+
         # Declaring objectives
         sla_violations = 0
-        useless_migrations = 0
-        migrations_to_outdated_servers = 0
-
-        # Objective 1: minimize the number of outdated servers hosting applications
-        outdated_servers_occupied = sum([1 for server in EdgeServer.outdated() if server.id in solution])
+        migrations_duration = []
+        undesired_migrations = 0
+        vulnerable_servers = 0
 
         # Gathering edge servers capacity
-        edge_servers_capacity = [edge_server.capacity for edge_server in EdgeServer.all()]
+        edge_servers_free_capacity = [edge_server.capacity - edge_server.demand for edge_server in EdgeServer.all()]
 
+        # Gathering the list of services hosted by outdated hosts (these servers will possibly be relocated)
         services_hosted_by_outdated_servers = [service for service in Service.all() if not service.server.updated]
 
+        # Objective 1: minimize the number of outdated servers
+        for server in EdgeServer.outdated():
+            if server.id in solution:
+                vulnerable_servers += 1
+
+        # Applying the placement scheme suggested by the solution
         for service_id, server_id in enumerate(solution, 1):
             server = EdgeServer.instances[server_id - 1]
             service = services_hosted_by_outdated_servers[service_id - 1]
             user = service.application.users[0]
 
-            # Updating edge server occupation
-            edge_servers_capacity[server.id - 1] -= service.demand
+            # Checking if the current service is migrated by the solution
+            if service.server != server:
+                # Updating the demand of edge servers involved in the migration
+                edge_servers_free_capacity[service.server.id - 1] += service.demand
+                edge_servers_free_capacity[server.id - 1] -= service.demand
 
-            # Counting the number of useless migrations that don't lead an outdated server drained
-            if service.server != server and service.server.id in solution:
-                useless_migrations += 1
+                # Objective 2 (part 1): minimize the average migration duration
+                migration_path = nx.shortest_path(
+                    G=topology,
+                    source=service.server.base_station,
+                    target=server.base_station,
+                    weight="bandwidth",
+                )
+                migration_duration = service.get_migration_time(path=migration_path)
+                migrations_duration.append(migration_duration)
+
+                # Objective 2 (part 2): minimize the number of undesired migrations. Here, undesired migrations
+                # are those that don't lead an outdated server drained or target outdated servers
+                if service.server.id in solution or not server.updated:
+                    undesired_migrations += 1
+
+                if self.longest_migration < migration_duration:
+                    self.longest_migration = migration_duration
 
             # Objective 3: minimize the number of SLA violations
             sla = user.delay_slas[service.application]
-            topology = Topology.first()
             shortest_path = nx.shortest_path(
                 G=topology,
                 source=user.base_station,
@@ -108,55 +156,81 @@ class PlacementProblem(Problem):
                 else topology[u][v]["delay"] * 10,
                 method="dijkstra",
             )
-
-            # Counting the number of applications migrated to outdated servers
-            if service.server != server and not server.updated:
-                migrations_to_outdated_servers += 1
-
             delay = user.base_station.wireless_delay + topology.calculate_path_delay(shortest_path)
             if delay > sla:
                 sla_violations += 1
 
-        # Objective 2: minimize the number of undesired migrations
-        undesired_migrations = useless_migrations + migrations_to_outdated_servers
+        # Aggregating the different fitness scores of the evaluated solution
+        migration_score = (sum(migrations_duration) / len(migrations_duration)) * (1 + undesired_migrations)
+        fitness = (
+            vulnerable_servers,
+            migration_score,
+            sla_violations,
+        )
 
-        fitness = (outdated_servers_occupied, undesired_migrations, sla_violations)
-        overloaded_servers = sum([1 for item in edge_servers_capacity if item < 0])
+        # Calculating the number of overloaded servers (which is the problem constraint and represents a penalty)
+        overloaded_servers = sum([1 for item in edge_servers_free_capacity if item < 0])
 
         return (fitness, overloaded_servers)
+
+
+def min_max_norm(x, minimum, maximum) -> float:
+    """Rescales a variable to a range between 0 and 1 using the rescaling method (also known as min-max normalization).
+
+    Args:
+        x (number): Variable that will be rescaled.
+        minimum (number): Minimum value from the dataset.
+        maximum (number): Maximum value from the dataset.
+
+    Returns:
+        float: Normalized variable.
+    """
+    if x == maximum:
+        return 1
+    return (x - minimum) / (maximum - minimum)
 
 
 def get_allocation_scheme(
     n_gen: int, pop_size: int, sampling: str, cross: str, cross_prob: int, mutation: str, weights: int
 ) -> list:
-    if ALGORITHM == "NSGA-II":
-        method = NSGA2(
-            pop_size=pop_size,
-            sampling=get_sampling(sampling),
-            crossover=get_crossover(cross, prob=cross_prob),
-            mutation=get_mutation(mutation, prob=1 / Service.count()),
-            eliminate_duplicates=False,
-        )
-    elif ALGORITHM == "NSGA-III":
-        ref_dirs = get_reference_directions("das-dennis", 3, n_partitions=3)
-        method = NSGA3(
-            pop_size=pop_size,
-            ref_dirs=ref_dirs,
-            sampling=get_sampling(sampling),
-            crossover=get_crossover(cross, prob=cross_prob),
-            mutation=get_mutation(mutation, prob=1 / Service.count()),
-            eliminate_duplicates=False,
-        )
+    """Gets the allocation scheme used to drain servers during the maintenance using the genetic algorithm.
 
+    Args:
+        n_gen (int): Number of generations the genetic algorithm will run through.
+        pop_size (int): Number of chromosomes that will represent the genetic algorithm's population.
+        sampling (str): Sampling scheme used to create the initial population of the genetic algorithm.
+        cross (str): Crossover method used to create the population offspring.
+        cross_prob (int): Crossover probability.
+        mutation (str): Mutation method used to ensure the population diversity across the generations.
+        weights (int): ID of weighting configuration used to pick a solution from the Pareto-set.
+
+    Returns:
+        [list]: Placement scheme returned by the genetic algorithm.
+    """
+    # Defining the mutation probability
+    services_hosted_by_outdated_servers = [service for service in Service.all() if not service.server.updated]
+    mutation_prob = 1 / len(services_hosted_by_outdated_servers)
+
+    # Defining genetic algorithm's attributes
+    method = NSGA2(
+        pop_size=pop_size,
+        sampling=get_sampling(sampling),
+        crossover=get_crossover(cross, prob=cross_prob),
+        mutation=get_mutation(mutation, prob=mutation_prob),
+        eliminate_duplicates=False,
+    )
+
+    # Running the genetic algorithm
     problem = PlacementProblem()
     res = minimize(problem, method, termination=("n_gen", n_gen), seed=1, verbose=VERBOSE, display=MyDisplay())
 
+    # Parsing the genetic algorithm output
     solutions = []
     for i in range(len(res.X)):
         placement = res.X[i].tolist()
         fitness = {
-            "Outd. SVs Used": res.F[i][0],
-            "Useless Migrations": res.F[i][1],
+            "Outd. Capacity": res.F[i][0],
+            "Migr. Duration": res.F[i][1],
             "SLA Violations": res.F[i][2],
         }
         overloaded_servers = res.CV[i][0].tolist()
@@ -168,20 +242,23 @@ def get_allocation_scheme(
         solutions,
         key=lambda s: (
             s["overloaded_servers"],
-            min_max_norm(x=s["fitness"]["Outd. SVs Used"], minimum=0, maximum=len(EdgeServer.outdated())) * weights[0]
-            + min_max_norm(x=s["fitness"]["Useless Migrations"], minimum=0, maximum=Service.count()) * weights[1]
+            min_max_norm(x=s["fitness"]["Outd. Capacity"], minimum=0, maximum=len(EdgeServer.outdated())) * weights[0]
+            + min_max_norm(x=s["fitness"]["Migr. Duration"], minimum=0, maximum=problem.longest_migration) * weights[1]
             + min_max_norm(x=s["fitness"]["SLA Violations"], minimum=0, maximum=Service.count()) * weights[2],
         ),
     )
 
-    print(
-        f"SOLUTION: {solutions[0]['fitness']}. Overloaded SVs: {solutions[0]['overloaded_servers']}. Weights: {weights}"
-    )
+    print(f"{solutions[0]['fitness']}. Overloaded SVs: {solutions[0]['overloaded_servers']}. Weights: {weights}")
 
     return solutions[0]["placement"]
 
 
 def laxus(arguments: dict):
+    """Location-Aware Maintenance Algorithm
+
+    Args:
+        arguments (dict): List of arguments passed to the algorithm.
+    """
     # Patching outdated edge servers hosting no services
     servers_to_patch = [server for server in EdgeServer.all() if not server.updated and len(server.services) == 0]
     if len(servers_to_patch) > 0:
@@ -190,9 +267,6 @@ def laxus(arguments: dict):
 
     # Migrating services to drain outdated edge servers
     else:
-        outdated_servers_hosting_apps = sum([1 for server in EdgeServer.outdated() if len(server.services) > 0])
-        print(f"[BEFORE] OUTDATED SERVERS HOSTING APPLICATIONS: {outdated_servers_hosting_apps}")
-
         allocation_scheme = get_allocation_scheme(
             n_gen=arguments["n_gen"],
             pop_size=arguments["pop_size"],
@@ -215,6 +289,3 @@ def laxus(arguments: dict):
                 app = service.application
                 user = app.users[0]
                 user.set_communication_path(app)
-
-        outdated_servers_hosting_apps = sum([1 for server in EdgeServer.outdated() if len(server.services) > 0])
-        print(f"[AFTER] OUTDATED SERVERS HOSTING APPLICATIONS: {outdated_servers_hosting_apps}")
