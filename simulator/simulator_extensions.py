@@ -192,8 +192,13 @@ def collect_metrics(self, algorithm: str):
             if migration["batch"] == self.maintenance_batches:
                 current_batch_duration += migration["duration"]
 
+    overloaded_servers = 0
     updates_in_the_current_batch = []
     for edge_server in EdgeServer.all():
+
+        if edge_server.demand > edge_server.capacity:
+            overloaded_servers += 1
+
         if (
             edge_server.updated
             and "maintenance_batch" in edge_server.update_metadata
@@ -235,6 +240,7 @@ def collect_metrics(self, algorithm: str):
     migrations = []
     for application in Application.all():
         user = application.users[0]
+        user.set_communication_path(application)
 
         # Number of SLA Violations
         if user.delays[application] > user.delay_slas[application]:
@@ -267,6 +273,7 @@ def collect_metrics(self, algorithm: str):
             "batch": self.maintenance_batches,
             "batch_duration": current_batch_duration,
             "overall_maintenance_duration": maintenance_duration,
+            "overloaded_servers": overloaded_servers,
             "used_servers": used_servers,
             "updated_servers": updated_servers,
             "outdated_servers": outdated_servers,
@@ -274,7 +281,7 @@ def collect_metrics(self, algorithm: str):
             "sla_violations": sla_violations,
             "safeguarded_services": safeguarded_services,
             "vulnerable_services": vulnerable_services,
-            "migrations": len(migrations),
+            "migrations": migrations,
             "overall_migration_duration": overall_migration_duration,
             "average_migration_duration": average_migration_duration,
             "longest_migration_duration": longest_migration_duration,
@@ -289,38 +296,49 @@ def show_results(self, verbosity: bool):
         verbosity (bool): Controls the output verbosity.
     """
     for algorithm, results in self.metrics.items():
+        overloaded_servers = 0
         consolidation_rate = []
         vulnerability_surface = 0
         sla_violations = 0
-        migrations = 0
+        number_of_migrations = 0
+        migrations = []
         overall_migration_duration = 0
         average_migration_duration = []
         longest_migration_duration = 0
 
         updated_servers_per_batch = []
         outdated_servers_per_batch = []
+        safeguarded_services_per_batch = []
+        vulnerable_services_per_batch = []
         maintenance_duration_per_batch = []
         sla_violations_per_batch = []
+        migrations_duration_per_batch = []
 
         print(f"\nAlgorithm: {algorithm}")
         for batch_results in results:
             consolidation_rate.append(100 - (batch_results["used_servers"] * 100 / EdgeServer.count()))
             vulnerability_surface += batch_results["vulnerability_surface"]
             sla_violations += batch_results["sla_violations"]
-            migrations += batch_results["migrations"]
+            number_of_migrations += len(batch_results["migrations"])
+            migrations.extend(batch_results["migrations"])
+            migrations_duration_per_batch.append(sum([migration for migration in batch_results["migrations"]]))
             overall_migration_duration += batch_results["overall_migration_duration"]
             average_migration_duration.append(batch_results["average_migration_duration"])
             if longest_migration_duration < batch_results["longest_migration_duration"]:
                 longest_migration_duration = batch_results["longest_migration_duration"]
 
+            overloaded_servers += batch_results["overloaded_servers"]
             maintenance_duration_per_batch.append(int(batch_results["overall_maintenance_duration"]))
             updated_servers_per_batch.append(batch_results["updated_servers"])
             outdated_servers_per_batch.append(batch_results["outdated_servers"])
             sla_violations_per_batch.append(batch_results["sla_violations"])
+            safeguarded_services_per_batch.append(batch_results["safeguarded_services"])
+            vulnerable_services_per_batch.append(batch_results["vulnerable_services"])
 
             if verbosity:
                 print(f"    Maintenance Batch {batch_results['batch']} (duration={batch_results['batch_duration']}):")
                 print(f"        Maintenance Duration: {batch_results['overall_maintenance_duration']}")
+                print(f"        Overloaded Servers: {batch_results['overloaded_servers']}")
                 print(f"        Used Servers: {batch_results['used_servers']}")
                 print(f"        Updated Servers: {batch_results['updated_servers']}")
                 print(f"        Outdated Servers: {batch_results['outdated_servers']}")
@@ -341,14 +359,17 @@ def show_results(self, verbosity: bool):
             int(results[-1]["overall_maintenance_duration"]),
             consolidation_rate,
             sla_violations,
-            migrations,
+            number_of_migrations,
             overall_migration_duration,
             average_migration_duration,
             longest_migration_duration,
             vulnerability_surface,
+            overloaded_servers,
             sla_violations_per_batch,
             updated_servers_per_batch,
             outdated_servers_per_batch,
+            safeguarded_services_per_batch,
+            vulnerable_services_per_batch,
             maintenance_duration_per_batch,
         ]
 
@@ -362,10 +383,15 @@ def show_results(self, verbosity: bool):
         print(f"        Average Migration Duration: {overall_results[6]}")
         print(f"        Longest Migration Duration: {overall_results[7]}")
         print(f"        Vulnerability Surface: {overall_results[8]}")
-        print(f"        SLA Violations per Batch: {overall_results[9]}")
-        print(f"        Updated Servers per Batch: {overall_results[10]}")
-        print(f"        Outdated Servers per Batch: {overall_results[11]}")
-        print(f"        Maintenance Duration per Batch: {overall_results[12]}")
+        print(f"        Overloaded Servers: {overall_results[9]}")
+        print(f"        SLA Violations per Batch: {overall_results[10]}")
+        print(f"        Updated Servers per Batch: {overall_results[11]}")
+        print(f"        Outdated Servers per Batch: {overall_results[12]}")
+        print(f"        Safeguarded Services per Batch: {overall_results[13]}")
+        print(f"        Vulnerable Services per Batch: {overall_results[14]}")
+        print(f"        Maintenance Duration per Batch: {overall_results[15]}")
+        print(f"        Migrations duration per batch: {migrations_duration_per_batch}")
+        print(f"        All migrations: {migrations}")
 
         print(f"        CSV-READY RESULTS: ", end="")
         for metric in overall_results:
