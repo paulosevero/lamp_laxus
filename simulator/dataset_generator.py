@@ -39,7 +39,15 @@ from simulator.dataset_generator_extensions import set_sanity_checks_all_edge_se
 
 
 def find_neighbors_hexagonal_grid(map_coordinates: list, current_position: tuple) -> list:
-    """Finds the set of adjacent positions of coordinates 'current_position' in a hexagonal grid."""
+    """Finds the set of adjacent positions of coordinates 'current_position' in a hexagonal grid.
+
+    Args:
+        map_coordinates (list): List of map coordinates.
+        current_position (tuple): Current position of the hexagonal grid whose neighbors we want to find.
+
+    Returns:
+        neighbors (list): List of neighbors from the current position in the hexagonal grid map.
+    """
     x = current_position[0]
     y = current_position[1]
 
@@ -55,6 +63,7 @@ def find_neighbors_hexagonal_grid(map_coordinates: list, current_position: tuple
 
 
 def closest_fit():
+    """Migrates the list of services to the edge servers located closer to its users in the map."""
     topology = Topology.first()
     services = random.sample(Service.all(), Service.count())
 
@@ -95,6 +104,7 @@ def closest_fit():
                 break
 
 
+# Adjusting the level of verbosity of the dataset generator
 VERBOSE = False
 
 # Defining seed values to enable reproducibility
@@ -112,7 +122,7 @@ EdgeServerBuilder.set_sanity_checks_all_edge_servers = set_sanity_checks_all_edg
 simulation_steps = 1
 
 # Creating list of hexagons to represent the map
-map_coordinates = create_hexagonal_grid(x_size=12, y_size=12)
+map_coordinates = create_hexagonal_grid(x_size=10, y_size=10)
 
 # Creating base stations
 n_base_stations = len(map_coordinates)
@@ -124,24 +134,24 @@ base_station_builder.set_wireless_delay_all_base_stations(wireless_delay_values=
 
 
 # Creating edge servers
-n_edge_servers = 50
+n_edge_servers = 40
 edge_server_builder = EdgeServerBuilder()
 edge_server_builder.create_objects(n_objects=n_edge_servers)
 edge_servers_coordinates = random.sample(map_coordinates, n_edge_servers)
 edge_server_builder.set_coordinates_all_edge_servers(coordinates=edge_servers_coordinates)
-edge_servers_capacity = uniform(n_items=n_edge_servers, valid_values=[150, 200], shuffle_distribution=True)
+edge_servers_capacity = uniform(n_items=n_edge_servers, valid_values=[200, 250], shuffle_distribution=True)
 edge_server_builder.set_capacity_all_edge_servers(capacity_values=edge_servers_capacity)
 
 edge_servers_update_statuses = uniform(n_items=n_edge_servers, valid_values=[False], shuffle_distribution=True)
 edge_server_builder.set_update_status_all_edge_servers(update_statuses=edge_servers_update_statuses)
-edge_servers_patches = uniform(n_items=n_edge_servers, valid_values=[250, 500], shuffle_distribution=True)
+edge_servers_patches = uniform(n_items=n_edge_servers, valid_values=[250, 350], shuffle_distribution=True)
 edge_server_builder.set_patches_all_edge_servers(patch_values=edge_servers_patches)
-edge_servers_sanity_checks = uniform(n_items=n_edge_servers, valid_values=[300, 600], shuffle_distribution=True)
+edge_servers_sanity_checks = uniform(n_items=n_edge_servers, valid_values=[300, 400], shuffle_distribution=True)
 edge_server_builder.set_sanity_checks_all_edge_servers(sanity_check_values=edge_servers_sanity_checks)
 
 
 # Creating applications and services (and defining relationships between them)
-n_applications = 100
+n_applications = 90
 application_builder = ApplicationBuilder()
 application_builder.create_objects(n_objects=n_applications)
 network_demands = uniform(n_items=n_applications, valid_values=[1, 2], shuffle_distribution=True)
@@ -190,14 +200,6 @@ elif topology_name == "Partially Connected Mesh":
             neighbor_base_station = BaseStation.find_by("coordinates", coordinates)
             topology.add_edge(base_station, neighbor_base_station)
 
-    # Adding attributes to the topology links
-    for index, link_nodes in enumerate(topology.edges(data=True)):
-        link = topology[link_nodes[0]][link_nodes[1]]
-        link["id"] = index + 1
-        link["delay"] = 10
-        link["bandwidth"] = 10
-        link["demand"] = 0
-
 
 # Defining link attributes
 n_links = len(list(topology.edges))
@@ -221,11 +223,9 @@ user_builder.set_target_positions(map_coordinates=map_coordinates, n_target_posi
 user_builder.set_pathway_mobility_all_users(
     map_coordinates=map_coordinates, steps=simulation_steps, target_positions=False
 )
-
 users_per_application = uniform(n_items=n_users, valid_values=[1], shuffle_distribution=True)
-
 for index, user in enumerate(User.all()):
-    delay_slas = uniform(n_items=users_per_application[index], valid_values=[30, 60], shuffle_distribution=True)
+    delay_slas = uniform(n_items=users_per_application[index], valid_values=[45, 90], shuffle_distribution=True)
 
     for i in range(users_per_application[index]):
         application = next((application for application in Application.all() if len(application.users) <= i), None)
@@ -235,7 +235,7 @@ for index, user in enumerate(User.all()):
             user.delay_slas[application] = delay_slas[i]
 
 
-# Defines the initial service placement scheme
+# Defining the initial service placement scheme
 closest_fit()
 
 
@@ -317,14 +317,11 @@ if VERBOSE:
             )
 
 
-##########################
-## CREATING OUTPUT FILE ##
-##########################
-# Creating dataset dictionary that will be converted to a JSON object
+# Creating a dictionary that will be converted to a JSON object containing the dataset
 dataset = {}
 
 
-# General information
+# General dataset information
 dataset["simulation_steps"] = simulation_steps
 dataset["coordinates_system"] = "hexagonal_grid"
 
