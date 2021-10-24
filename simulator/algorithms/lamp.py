@@ -66,7 +66,7 @@ def lamp(arguments: dict):
                     candidate_servers = sorted(
                         candidate_servers,
                         key=lambda c: (
-                            get_delay(user_base_station=user.base_station, origin=c, target=server) > sla,
+                            get_delay(user_base_station=user.base_station, origin=c, target=server),
                             -c.updated,
                             c.capacity - c.demand,
                         ),
