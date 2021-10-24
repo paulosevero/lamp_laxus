@@ -161,7 +161,11 @@ class PlacementProblem(Problem):
                 sla_violations += 1
 
         # Aggregating the different fitness scores of the evaluated solution
-        migration_score = (sum(migrations_duration) / len(migrations_duration)) * (1 + undesired_migrations)
+        if len(migrations_duration) == 0:
+            migration_score = 0
+        else:
+            migration_score = (sum(migrations_duration) / len(migrations_duration)) * (1 + undesired_migrations)
+
         fitness = (
             vulnerable_servers,
             migration_score,

@@ -60,7 +60,6 @@ def lamp(arguments: dict):
 
                     application = service.application
                     user = application.users[0]
-                    sla = user.delay_slas[application]
 
                     # Sorting criteria: update status, violates SLA, occupation rate
                     candidate_servers = sorted(
