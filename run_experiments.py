@@ -3,16 +3,13 @@
 import itertools
 import time
 import os
-import re
-import csv
-from datetime import timedelta
 
 
 def run_simulation(dataset: str, algorithm: str, n_gen: int, pop_size: int, cross_prob: float, weights: int) -> dict:
     """Executes the simulation with specified parameters."""
     # Running the simulation based on the parameters and gathering its execution time
-    # python3 -B -m simulator --dataset example1 --algorithm laxus --pop_size 10 --n_gen 100 --cross_prob 0.75 --weights 0
     cmd = f"python3 -B -m simulator --dataset {dataset} --algorithm {algorithm} --n_gen {n_gen} --pop_size {pop_size} --cross_prob {cross_prob} --weights {weights}"
+    print(f"    cmd = {cmd}")
 
     # Running the simulation with the specified parameters
     initial_time = time.time()
@@ -55,6 +52,9 @@ def run_simulation(dataset: str, algorithm: str, n_gen: int, pop_size: int, cros
     vulnerability_surface = next(
         line.split("Vulnerability Surface: ")[1] for line in output.splitlines() if "Vulnerability Surface: " in line
     )
+    overloaded_servers = next(
+        line.split("Overloaded Servers: ")[1] for line in output.splitlines() if "Overloaded Servers: " in line
+    )
     sla_violations_per_batch = next(
         line.split("SLA Violations per Batch: ")[1]
         for line in output.splitlines()
@@ -70,10 +70,28 @@ def run_simulation(dataset: str, algorithm: str, n_gen: int, pop_size: int, cros
         for line in output.splitlines()
         if "Outdated Servers per Batch: " in line
     )
+    safeguarded_services_per_batch = next(
+        line.split("Safeguarded Services per Batch: ")[1]
+        for line in output.splitlines()
+        if "Safeguarded Services per Batch: " in line
+    )
+    vulnerable_services_per_batch = next(
+        line.split("Vulnerable Services per Batch: ")[1]
+        for line in output.splitlines()
+        if "Vulnerable Services per Batch: " in line
+    )
     maintenance_duration_per_batch = next(
         line.split("Maintenance Duration per Batch: ")[1]
         for line in output.splitlines()
         if "Maintenance Duration per Batch: " in line
+    )
+    migrations_duration_per_batch = next(
+        line.split("Migrations duration per batch: ")[1]
+        for line in output.splitlines()
+        if "Migrations duration per batch: " in line
+    )
+    duration_of_each_migration = next(
+        line.split("All migrations: ")[1] for line in output.splitlines() if "All migrations: " in line
     )
 
     result = {
@@ -93,28 +111,27 @@ def run_simulation(dataset: str, algorithm: str, n_gen: int, pop_size: int, cros
         "avg_migration_duration": avg_migration_duration,
         "longest_migration_duration": longest_migration_duration,
         "vulnerability_surface": vulnerability_surface,
+        "overloaded_servers": overloaded_servers,
         "sla_violations_per_batch": sla_violations_per_batch,
         "updated_servers_per_batch": updated_servers_per_batch,
         "outdated_servers_per_batch": outdated_servers_per_batch,
+        "safeguarded_services_per_batch": safeguarded_services_per_batch,
+        "vulnerable_services_per_batch": vulnerable_services_per_batch,
         "maintenance_duration_per_batch": maintenance_duration_per_batch,
+        "migrations_duration_per_batch": migrations_duration_per_batch,
+        "duration_of_each_migration": duration_of_each_migration,
     }
 
     return result
 
 
 # Parameters
-# datasets = ["dataset1"]
-# algorithms = ["laxus"]
-# population_sizes = [50]
-# number_of_generations = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
-# crossover_probabilities = [0.25, 0.5, 0.75, 1]
-# weights = [0, 1, 2, 3, 4, 5, 6]
 datasets = ["dataset1"]
 algorithms = ["laxus"]
 population_sizes = [50]
-number_of_generations = [50]
-crossover_probabilities = [0.25]
-weights = [0, 1, 2, 3, 4, 5, 6]
+number_of_generations = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200]
+crossover_probabilities = [0.25, 0.5, 0.75, 1]
+weights = [0]
 
 
 # Create CSV file with headers
@@ -137,10 +154,15 @@ headers = [
     "avg_migration_duration",
     "longest_migration_duration",
     "vulnerability_surface",
+    "overloaded_servers",
     "sla_violations_per_batch",
     "updated_servers_per_batch",
     "outdated_servers_per_batch",
+    "safeguarded_services_per_batch",
+    "vulnerable_services_per_batch",
     "maintenance_duration_per_batch",
+    "migrations_duration_per_batch",
+    "duration_of_each_migration",
 ]
 headers_str = ""
 for header in headers:
