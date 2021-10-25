@@ -17,7 +17,7 @@ from pymoo.algorithms.moo.nsga2 import NSGA2
 from pymoo.factory import get_sampling, get_crossover, get_mutation
 
 
-VERBOSE = False
+VERBOSE = True
 PARALLEL = False
 N_THREADS = 4
 WEIGHT_OPTIONS = [
@@ -59,7 +59,6 @@ class PlacementProblem(Problem):
     def __init__(self, **kwargs):
         """Initializes the problem instance."""
         self.services_on_outdated_hosts = len([1 for service in Service.all() if not service.server.updated])
-        self.longest_migration = 0
         super().__init__(
             n_var=self.services_on_outdated_hosts,
             n_obj=3,
@@ -141,9 +140,6 @@ class PlacementProblem(Problem):
                 # are those that don't lead an outdated server drained or target outdated servers
                 if service.server.id in solution or not server.updated:
                     undesired_migrations += 1
-
-                if self.longest_migration < migration_duration:
-                    self.longest_migration = migration_duration
 
             # Objective 3: minimize the number of SLA violations
             sla = user.delay_slas[service.application]
@@ -234,7 +230,7 @@ def get_allocation_scheme(
         placement = res.X[i].tolist()
         fitness = {
             "Outd. Capacity": res.F[i][0],
-            "Migr. Duration": res.F[i][1],
+            "Migr. Score": res.F[i][1],
             "SLA Violations": res.F[i][2],
         }
         overloaded_servers = res.CV[i][0].tolist()
@@ -242,13 +238,25 @@ def get_allocation_scheme(
 
     weights = WEIGHT_OPTIONS[weights]
 
+    # Gathering min and max values for each objective in the fitness function
+    min_outdated_capacity = min([solution["fitness"]["Outd. Capacity"] for solution in solutions])
+    max_outdated_capacity = max([solution["fitness"]["Outd. Capacity"] for solution in solutions])
+    min_migration_score = min([solution["fitness"]["Migr. Score"] for solution in solutions])
+    max_migration_score = max([solution["fitness"]["Migr. Score"] for solution in solutions])
+    min_sla_violations = min([solution["fitness"]["SLA Violations"] for solution in solutions])
+    max_sla_violations = max([solution["fitness"]["SLA Violations"] for solution in solutions])
+
+    # Sorting solutions in the Pareto Set
     solutions = sorted(
         solutions,
         key=lambda s: (
             s["overloaded_servers"],
-            min_max_norm(x=s["fitness"]["Outd. Capacity"], minimum=0, maximum=len(EdgeServer.outdated())) * weights[0]
-            + min_max_norm(x=s["fitness"]["Migr. Duration"], minimum=0, maximum=problem.longest_migration) * weights[1]
-            + min_max_norm(x=s["fitness"]["SLA Violations"], minimum=0, maximum=Service.count()) * weights[2],
+            min_max_norm(x=s["fitness"]["Outd. Capacity"], minimum=min_outdated_capacity, maximum=max_outdated_capacity)
+            * weights[0]
+            + min_max_norm(x=s["fitness"]["Migr. Score"], minimum=min_migration_score, maximum=max_migration_score)
+            * weights[1]
+            + min_max_norm(x=s["fitness"]["SLA Violations"], minimum=min_sla_violations, maximum=max_sla_violations)
+            * weights[2],
         ),
     )
 
