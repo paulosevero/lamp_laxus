@@ -128,8 +128,8 @@ def run_simulation(dataset: str, algorithm: str, n_gen: int, pop_size: int, cros
 # Parameters
 datasets = ["dataset1"]
 algorithms = ["laxus"]
-population_sizes = [100]
-number_of_generations = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200]
+population_sizes = [120]
+number_of_generations = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
 crossover_probabilities = [0.25, 0.5, 0.75, 1]
 weights = [0]
 
