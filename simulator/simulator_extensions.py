@@ -371,6 +371,8 @@ def show_results(self, verbosity: bool):
             safeguarded_services_per_batch,
             vulnerable_services_per_batch,
             maintenance_duration_per_batch,
+            migrations_duration_per_batch,
+            migrations,
         ]
 
         print("    Overall:")
