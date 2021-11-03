@@ -9,12 +9,12 @@ from edge_sim_py.components.application import Application
 from edge_sim_py.components.service import Service
 
 # Maintenance-related methods
-from simulator.edge_server_extensions import outdated
-from simulator.edge_server_extensions import updated
-from simulator.edge_server_extensions import ready_to_update
-from simulator.edge_server_extensions import can_host_services
-from simulator.edge_server_extensions import update
-from simulator.service_extensions import migrate
+from simulator.components_extensions.edge_server_extensions import outdated
+from simulator.components_extensions.edge_server_extensions import updated
+from simulator.components_extensions.edge_server_extensions import ready_to_update
+from simulator.components_extensions.edge_server_extensions import can_host_services
+from simulator.components_extensions.edge_server_extensions import update
+from simulator.components_extensions.service_extensions import migrate
 
 # Python libraries
 import json

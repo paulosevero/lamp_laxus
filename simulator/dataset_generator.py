@@ -12,7 +12,6 @@ import json
 import networkx as nx
 
 # EdgeSimPy components
-from edge_sim_py.simulator import Simulator
 from edge_sim_py.components.base_station import BaseStation
 from edge_sim_py.components.edge_server import EdgeServer
 from edge_sim_py.components.application import Application
@@ -23,7 +22,6 @@ from edge_sim_py.components.user import User
 # Helper builders
 from edge_sim_py.component_builders.map_builder import create_hexagonal_grid
 from edge_sim_py.component_builders.distributions_builder import uniform
-from edge_sim_py.component_builders.placements_builder import first_fit
 
 # Component builders
 from edge_sim_py.component_builders.base_station_builder import BaseStationBuilder
@@ -31,11 +29,6 @@ from edge_sim_py.component_builders.edge_server_builder import EdgeServerBuilder
 from edge_sim_py.component_builders.application_builder import ApplicationBuilder
 from edge_sim_py.component_builders.service_builder import ServiceBuilder
 from edge_sim_py.component_builders.user_builder import UserBuilder
-
-# Maintenance-related components
-from simulator.dataset_generator_extensions import set_update_status_all_edge_servers
-from simulator.dataset_generator_extensions import set_patches_all_edge_servers
-from simulator.dataset_generator_extensions import set_sanity_checks_all_edge_servers
 
 
 def find_neighbors_hexagonal_grid(map_coordinates: list, current_position: tuple) -> list:
@@ -102,6 +95,45 @@ def closest_fit():
                 edge_server.demand += service.demand
                 service.server = edge_server
                 break
+
+
+def set_update_status_all_edge_servers(self, update_statuses: list) -> list:
+    """Defines the update status of edge server objects.
+    Args:
+        update_statuses (list): Update statuses assigned to the edge server objects.
+    Returns:
+        edge_servers (list): Modified EdgeServer objects.
+    """
+    for index, edge_server in enumerate(self.objects):
+        edge_server.updated = update_statuses[index]
+
+    return self.objects
+
+
+def set_patches_all_edge_servers(self, patch_values: list) -> list:
+    """Defines the time it takes to update edge servers.
+    Args:
+        patch_values (list): Patch durations assigned to the edge server objects.
+    Returns:
+        edge_servers (list): Modified EdgeServer objects.
+    """
+    for index, edge_server in enumerate(self.objects):
+        edge_server.patch = patch_values[index]
+
+    return self.objects
+
+
+def set_sanity_checks_all_edge_servers(self, sanity_check_values: list) -> list:
+    """Defines the time it takes to run sanity checks on edge servers after they are updated.
+    Args:
+        sanity_check_values (list): Sanity check durations assigned to the edge server objects.
+    Returns:
+        edge_servers (list): Modified EdgeServer objects.
+    """
+    for index, edge_server in enumerate(self.objects):
+        edge_server.sanity_check = sanity_check_values[index]
+
+    return self.objects
 
 
 # Adjusting the level of verbosity of the dataset generator
