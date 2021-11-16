@@ -1,4 +1,4 @@
-# Location-Aware Infrastructure Updates at the Edge
+# Location-Aware Maintenance Strategies for Edge Infrastructures
 
 > This repository presents two maintenance strategies, **Lamp** and **Laxus**, designed for updating edge computing infrastructures considering users' locations when performing migration decisions.
 
