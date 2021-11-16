@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "laxus"
+name = "simulator"
 version = "0.1.0"
-description = "Location-Aware Infrastructure Updates at the Edge"
+description = "Location-Aware Maintenance Strategies for Edge Infrastructures"
 authors = ["Paulo Severo <opaulosevero@gmail.com>"]
 license = "MIT License"
 
