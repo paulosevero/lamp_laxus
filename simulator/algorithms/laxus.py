@@ -17,7 +17,7 @@ from pymoo.algorithms.moo.nsga2 import NSGA2
 from pymoo.factory import get_sampling, get_crossover, get_mutation
 
 
-VERBOSE = True
+VERBOSE = False
 PARALLEL = False
 N_THREADS = 4
 WEIGHT_OPTIONS = [
