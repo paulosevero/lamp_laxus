@@ -18,10 +18,8 @@ Within the repository, you'll find the following directories and files, logicall
 │   └── example1.json
 ├── dependencies/
 │   └── edge_sim_py-0.1.0-py3-none-any.whl
-├── LICENSE
 ├── poetry.lock
 ├── pyproject.toml
-├── README.md
 ├── run_experiments.py
 └── simulator/
     ├── algorithms/
