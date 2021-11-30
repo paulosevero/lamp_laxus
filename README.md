@@ -6,7 +6,7 @@
 
 ## Motivation
 
-Efficient infrastructure maintenance is key to avoiding performance and security issues in computing environments. Despite their contributions, existing maintenance strategies are designed aiming solely at cloud data centers. This letter presents two maintenance strategies (Lamp and Laxus), representing the first steps towards updating edge computing infrastructures while considering previously unexplored requirements such as users' location. While Lamp uses cost functions to determine when and how to update servers properly, Laxus employs a multi-objective genetic algorithm to make Pareto-Optimal maintenance decisions.
+Efficient infrastructure maintenance is key to avoiding performance and security issues in computing environments. Despite their contributions, existing maintenance strategies are designed aiming solely at cloud data centers. This repository presents two maintenance strategies (Lamp and Laxus), representing the first steps towards updating edge computing infrastructures while considering previously unexplored requirements such as users' location. While Lamp uses cost functions to determine when and how to update servers properly, Laxus employs a multi-objective genetic algorithm to make Pareto-Optimal maintenance decisions.
 
 ## Repository Structure
 
