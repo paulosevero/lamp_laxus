@@ -119,5 +119,4 @@ python3 -B -m simulator --dataset "dataset1" --algorithm "laxus" --n_gen 800 --p
 
 ## How to Cite
 
-To be defined.
-
+Souza, Paulo S., Tiago C. Ferreto, Fábio D. Rossi, and Rodrigo N. Calheiros. "Location-Aware Maintenance Strategies for Edge Computing Infrastructures." IEEE Communications Letters (2022).
