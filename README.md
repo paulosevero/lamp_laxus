@@ -118,4 +118,7 @@ python3 -B -m simulator --dataset "dataset1" --algorithm "laxus" --n_gen 800 --p
 
 ## How to Cite
 
-Souza, Paulo S., Tiago C. Ferreto, Fábio D. Rossi, and Rodrigo N. Calheiros. "Location-Aware Maintenance Strategies for Edge Computing Infrastructures." IEEE Communications Letters (2022).
+The complete manuscript presenting Lamp and Laxus can be found at IEEE Xplore ([link here](https://ieeexplore.ieee.org/document/9707816)).
+
+You can cite our paper with the following reference:
+> Souza, Paulo S., Tiago C. Ferreto, Fábio D. Rossi, and Rodrigo N. Calheiros. "Location-Aware Maintenance Strategies for Edge Computing Infrastructures." IEEE Communications Letters (2022).
