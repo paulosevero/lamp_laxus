@@ -18,7 +18,6 @@ Within the repository, you'll find the following directories and files, logicall
 │   └── example1.json
 ├── dependencies/
 │   └── edge_sim_py-0.1.0-py3-none-any.whl
-├── poetry.lock
 ├── pyproject.toml
 ├── run_experiments.py
 └── simulator/
@@ -40,7 +39,7 @@ Within the repository, you'll find the following directories and files, logicall
 
 In the root directory, the `pyproject.toml` file organizes all project dependencies, including the minimum required version of the Python language and the "whl" file containing the simulator core (included in the "dependencies" directory). This file guides the execution of the Poetry library, which installs the simulator securely, avoiding conflicts with external dependencies.
 
-> Modifications made to the pyproject.toml file are automatically inserted into poetry.lock whenever Poetry is called.
+> Modifications made to the pyproject.toml file are automatically inserted into `poetry.lock` whenever Poetry is called.
 
 The `run_experiments.py` file makes it easy to execute maintenance strategies. For instance, with just a few instructions, we can conduct a complete sensitivity analysis of the maintenance algorithms using different sets of parameters.
 
